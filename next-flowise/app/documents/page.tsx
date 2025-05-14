@@ -1,19 +1,19 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState } from "react";
-import { query } from "../../services/flowiseService";
+import { extractSourceDocuments, query } from "@/services/flowiseService";
+import { useState } from "react";
 
-// Define basic types for type-safety
-interface DocumentSource {
+interface Document {
   pageContent: string;
-  metadata: Record<string, unknown>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  metadata: Record<string, any>;
 }
 
 export default function DocumentSourcesPage() {
-  const [question, setQuestion] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [answer, setAnswer] = useState("");
-  const [sources, setSources] = useState<DocumentSource[]>([]);
+  const [question, setQuestion] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [documents, setDocuments] = useState<Document[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const handleSearch = async (e: React.FormEvent) => {
@@ -22,21 +22,20 @@ export default function DocumentSourcesPage() {
 
     setLoading(true);
     setError(null);
-    setSources([]);
-    setAnswer("");
 
     try {
       const response = await query({ question });
 
-      // Set answer
-      setAnswer(response.text || "");
+      const sources = extractSourceDocuments(response as any);
+      setDocuments(sources);
 
-      // Extract sources
-      const documents = response.sourceDocuments || [];
-      setSources(documents);
+      if (sources.length === 0) {
+        setError("No document sources found in the response.");
+      }
     } catch (err) {
-      console.error("Error:", err);
+      console.error("Error fetching documents:", err);
       setError("Failed to retrieve documents. Please try again.");
+      setDocuments([]);
     } finally {
       setLoading(false);
     }
@@ -52,7 +51,7 @@ export default function DocumentSourcesPage() {
             type="text"
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
-            placeholder="Ask a question..."
+            placeholder="Enter your question to retrieve relevant documents..."
             className="flex-1 p-2 border rounded"
           />
           <button
@@ -71,27 +70,22 @@ export default function DocumentSourcesPage() {
         </div>
       )}
 
-      {answer && (
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold mb-2">Answer:</h2>
-          <div className="p-4 bg-gray-50 rounded border">{answer}</div>
-        </div>
-      )}
-
-      {sources.length > 0 && (
+      {documents.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold mb-3">Source Documents:</h2>
+          <h2 className="text-xl font-semibold mb-4">
+            Found {documents.length} source document(s):
+          </h2>
 
           <div className="space-y-4">
-            {sources.map((source, index) => (
+            {documents.map((doc, index) => (
               <div key={index} className="border rounded p-4 bg-gray-50">
                 <h3 className="font-medium mb-2">Document #{index + 1}</h3>
 
                 <div className="mb-3">
-                  <h4 className="text-sm font-semibold mb-1">Content:</h4>
+                  <h4 className="text-sm font-semibold mb-1">Page Content:</h4>
                   <div className="bg-white p-3 border rounded overflow-auto max-h-60">
                     <pre className="whitespace-pre-wrap text-sm">
-                      {source.pageContent}
+                      {doc.pageContent}
                     </pre>
                   </div>
                 </div>
@@ -100,7 +94,7 @@ export default function DocumentSourcesPage() {
                   <h4 className="text-sm font-semibold mb-1">Metadata:</h4>
                   <div className="bg-white p-3 border rounded overflow-auto max-h-40">
                     <pre className="whitespace-pre-wrap text-sm">
-                      {JSON.stringify(source.metadata, null, 2)}
+                      {JSON.stringify(doc.metadata, null, 2)}
                     </pre>
                   </div>
                 </div>

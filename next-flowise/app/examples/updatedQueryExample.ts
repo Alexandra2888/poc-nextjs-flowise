@@ -15,13 +15,10 @@ async function query(data: { question: string }) {
   );
   const result = await response.json();
   
-  // Extract the answer text
   const answerText = result.text || result.answer || null;
   
-  // Extract source documents if they exist
   const sourceDocuments = result.sourceDocuments || [];
   
-  // Return both the answer and source documents
   return {
     answerText,
     sourceDocuments

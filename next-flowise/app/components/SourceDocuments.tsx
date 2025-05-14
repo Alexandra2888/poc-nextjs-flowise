@@ -51,7 +51,6 @@ export default function SourceDocuments({
   }
 
   const getSourceTitle = (source: DocumentSource, index: number): string => {
-    // Try to extract a meaningful title
     if (source.metadata?.pdf?.info?.Title) {
       return String(source.metadata.pdf.info.Title);
     }

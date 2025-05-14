@@ -25,20 +25,16 @@ async function queryWithSources(question: string) {
     
     const result = await response.json();
     
-    // Log the full response to inspect its structure
     console.log("Full response:", result);
     
-    // Extract the main answer text
     const answerText = result.text || result.answer || "No answer available";
     console.log("Answer:", answerText);
     
-    // Extract source documents if they exist
     const sourceDocuments: DocumentSource[] = result.sourceDocuments || [];
     
     if (sourceDocuments.length > 0) {
       console.log(`Found ${sourceDocuments.length} source documents:`);
       
-      // Process each source document
       sourceDocuments.forEach((doc, index) => {
         console.log(`\nDocument #${index + 1}:`);
         console.log(`Page Content: ${doc.pageContent.substring(0, 100)}...`); // Show first 100 chars

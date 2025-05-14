@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { query } from "../../services/flowiseService";
 
-// Define basic types for type-safety
 interface DocumentSource {
   pageContent: string;
   metadata: Record<string, unknown>;
@@ -26,13 +25,10 @@ export default function QueryExample() {
     setSources([]);
 
     try {
-      // Query the Flowise API
       const response = await query({ question });
 
-      // Set the answer text
       setAnswer(response.text || response.answer || "");
 
-      // Extract sources
       const documents = response.sourceDocuments || [];
       setSources(documents);
     } catch (error) {
